@@ -89,8 +89,6 @@ def exit():
     nfqueue.unbind()
     sys.exit(1)
 
-#1 dk
-
 if __name__ == "__main__":
     init()
     main()
