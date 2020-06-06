@@ -26,6 +26,7 @@ class PacketHandler(Thread):
                     else:
                         packet.drop()
                 else:
+                    self.print_packet(packet)
                     self.prompt_handler.add_packet_to_queue(packet)
                     packet.accept()
                 #host_name = get_host_name(ip)
@@ -34,7 +35,7 @@ class PacketHandler(Thread):
             except Exception:
                 continue
     
-    def print_packages(self, packet):
+    def print_packet(self, packet):
         print(packet.dst, packet.sport, self.get_application_name(packet.sport))
 
     def get_application_name(self, port):
