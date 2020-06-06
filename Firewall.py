@@ -1,6 +1,4 @@
 from netfilterqueue import NetfilterQueue
-from scapy.all import IP
-from filter import Filter
 from PacketHandler import PacketHandler
 from RuleTable import RuleTable
 import socket
@@ -26,8 +24,7 @@ class Firewall:
 
 
     def save_packet_to_queue(self, pkt):
-        packet_payload = IP(pkt.get_payload())
-        self.packet_handler.add_packet_to_queue(packet_payload)
+        self.packet_handler.add_packet_to_queue(pkt)
 
 
     def get_host_name(self, ip_address):

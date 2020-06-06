@@ -1,6 +1,7 @@
 from threading import Thread
 from RuleTable import RuleTable
 from PromptHandler import PromptHandler
+from scapy.all import IP
 import queue
 import subprocess
 
@@ -18,7 +19,8 @@ class PacketHandler(Thread):
             try:
                 packet = PacketHandler.packet_queue.get()
                 #port = packet.sport
-                ip = packet.dst
+                packet_payload = IP(packet.get_payload())
+                ip = packet_payload.dst
                 rule = self.rule_table.get_rule_of_packet_ip(ip)
                 if rule is not None:
                     if rule.is_allowed:
@@ -26,7 +28,7 @@ class PacketHandler(Thread):
                     else:
                         packet.drop()
                 else:
-                    self.print_packet(packet)
+                    self.print_packet(packet_payload)
                     self.prompt_handler.add_packet_to_queue(packet)
                     packet.accept()
                 #host_name = get_host_name(ip)
