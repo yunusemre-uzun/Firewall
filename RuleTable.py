@@ -24,7 +24,7 @@ class RuleTable():
         return None
     
     def add_rule(self, rule:Rule):
-        pass
+        self.table.append(rule)
 
     def remove_rule(self, rule:Rule):
         pass
