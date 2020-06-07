@@ -2,13 +2,14 @@ import datetime
 from netaddr import IPAddress, IPNetwork
 
 class Rule:
-    def __init__(self, ip, chain='O', time=False, save_at_exit=False, ip_flag=True, is_allowed=True):
+    def __init__(self, ip, port, chain='O', time=False, save_at_exit=False, ip_flag=True, is_allowed=True):
         self.chain = chain # Indicates the chain that rule belongs to O for output, I for input
         self.time = time # Indicates the expiration date of the rule. Default no expiration date
         self.save_at_exit = save_at_exit # When its true save the rule when program exits to use later
         self.ip_flag = ip_flag # Indicates that the rule is an single IP rule or a netmask
         self.is_allowed = is_allowed
         self.ip = ip # The ip or netmask of the rule
+        self.port = port
     
     def update_expiration_time(self, new_time):
         self.save_at_exit = True
