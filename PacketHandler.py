@@ -15,10 +15,11 @@ class PacketHandler(Thread):
         Thread.__init__(self)
         self.rule_table = RuleTable.getInstance()
         self.prompt_handler = PromptHandler()
+        self.prompt_handler.start()
         localhost_rule = Rule("127.0.0.0/8", ip_flag=False)
         self.rule_table.add_rule(localhost_rule)
-        t = Thread(target=self.print_packet)
-        t.start()
+        #t = Thread(target=self.print_packet)
+        #t.start()
 
     def run(self):
         while True:
@@ -54,17 +55,6 @@ class PacketHandler(Thread):
             except Exception as e:
                 print(e)
                 continue
-
-    def get_application_name(self, port):
-        lsof = subprocess.Popen("sudo lsof -i :{}".format(port), shell=True, stdout=subprocess.PIPE).stdout
-        lsof_out_lines = lsof.read().decode().split('\n')
-        applications = []
-        for i in range(1, len(lsof_out_lines)):
-            application_name = lsof_out_lines[i].split(' ')[0]
-            if application_name == '':
-                continue
-            applications.append(application_name)
-        return applications
     
     def add_packet_to_queue(self, packet):
         PacketHandler.packet_queue.put(packet)
