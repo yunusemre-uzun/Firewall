@@ -44,6 +44,6 @@ class Firewall:
         try:
             self.nfqueue.run()
         except KeyboardInterrupt:
-            exit()
+            self.exit()
         except Exception:
-            exit()
+            self.exit()
