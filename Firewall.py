@@ -10,8 +10,9 @@ import queue
 import subprocess
 
 
-class Firewall:
+class Firewall(threading.Thread):
     def __init__(self):
+        threading.Thread.__init__(self)
         self.packet_handler = PacketHandler()
         self.nfqueue = NetfilterQueue()
         self.rule_table = RuleTable.getInstance()
