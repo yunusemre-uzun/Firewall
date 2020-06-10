@@ -14,6 +14,7 @@ class Firewall(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.packet_handler = PacketHandler()
+        self.prompt_handler = self.packet_handler.get_prompt_handler()
         self.nfqueue = NetfilterQueue()
         self.rule_table = RuleTable.getInstance()
         #Add nfqueue to ip table output chain
@@ -22,6 +23,8 @@ class Firewall(threading.Thread):
     
     def add_iptable_rule(self):
         os.system("iptables -A OUTPUT -j NFQUEUE --queue-num 1")
+        os.system("iptables -A INPUT -i lo -j ACCEPT")
+        os.system("iptables -I OUTPUT -o lo -j ACCEPT")
 
 
     def save_packet_to_queue(self, pkt):
@@ -40,6 +43,7 @@ class Firewall(threading.Thread):
         sys.exit(1)
     
     def run(self):
+        time.sleep(5)
         self.packet_handler.start()
         self.nfqueue.bind(1, self.save_packet_to_queue)
         try:

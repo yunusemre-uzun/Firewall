@@ -2,6 +2,7 @@ from threading import Thread, Lock
 from scapy.all import IP, TCP, UDP
 from RuleTable import RuleTable
 from Rule import Rule
+from Controller import Controller
 import queue
 import sys
 import subprocess
@@ -15,7 +16,9 @@ class PromptHandler(Thread):
         Thread.__init__(self)
         self.mutex = Lock()
         self.rule_table = RuleTable.getInstance()
+        self.controller = Controller.get_instance()
 
+    
     def run(self):
         while True:
             self.mutex.acquire()
@@ -36,13 +39,10 @@ class PromptHandler(Thread):
         try:
             application_name = self.get_application_name(packet.sport)
             ip_host = self.get_host_name_of_ip(packet.dst)
-            print("{} wants to connect to {}:{} ({}) on port {}.".format(str(application_name), packet.dst, packet.dport, ip_host, packet.sport))
-            user_input = input()
-            if user_input == 'Y':
-                self.allow_action(application_name,packet)
-            else:
-                self.deny_action(packet)
-            self.mutex.release()
+            self.application_name = application_name
+            self.packet = packet
+            popup_text = "{} wants to connect to {}:{} ({}) on port {}.".format(str(application_name), packet.dst, packet.dport, ip_host, packet.sport)
+            self.controller.show_pop_up(popup_text, self.allow_action, self.deny_action)
         except Exception as e:
             print(e)
             self.mutex.release()
@@ -70,28 +70,42 @@ class PromptHandler(Thread):
     def add_packet_to_queue(self, packet):
         PromptHandler.prompt_queue.put(packet)
 
-    def allow_action(self, application_name, packet):
-        port = packet.sport
+    def allow_action(self, all_ports):
+        print("Allowed", all_ports)
+        packet = self.packet
+        destination_port = None
         ip = packet.dst
         if UDP in packet:
             proto = 'udp'
         else:
             proto = 'tcp'
-        os.system('iptables -I OUTPUT -p {} -d {} --sport {} -j ACCEPT'.format(proto, ip, port))
-        new_rule = Rule(ip, port)
+        if all_ports:
+            os.system('iptables -I OUTPUT -p {} -d {} -j ACCEPT'.format(proto, ip))
+        else:
+            destination_port = packet.dport
+            os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j ACCEPT'.format(proto, ip, destination_port))
+        new_rule = Rule(ip, destination_port)
         self.rule_table.add_rule(new_rule)
+        self.mutex.release()
         return None
 
 
-    def deny_action(self, packet):
-        port = packet.sport
+    def deny_action(self, all_ports):
+        print("Denied", all_ports)
+        packet = self.packet
+        destination_port = None
         ip = packet.dst
         if UDP in packet:
             proto = 'udp'
         else:
             proto = 'tcp'
-        os.system('iptables -I OUTPUT -p {} -d {} --sport {} -j DROP'.format(proto, ip, port))
-        new_rule = Rule(ip, port, is_allowed=False)
+        if all_ports:
+            os.system('iptables -I OUTPUT -p {} -d {} -j DROP'.format(proto, ip))
+        else:
+            destination_port = packet.dport
+            os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port))
+        new_rule = Rule(ip, destination_port, is_allowed=False)
         self.rule_table.add_rule(new_rule)
+        self.mutex.release()
         return None
         
