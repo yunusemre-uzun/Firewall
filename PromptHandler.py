@@ -1,7 +1,5 @@
 from threading import Thread, Lock
 from scapy.all import IP, TCP, UDP
-from ui.test2_window import draw
-from PyQt5 import QtWidgets
 from RuleTable import RuleTable
 from Rule import Rule
 import queue
