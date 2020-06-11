@@ -38,12 +38,20 @@ class Firewall(threading.Thread):
     def exit(self):
         self.rule_table.save_rules()
         #Remove nfqueue from ip table output chain
+        #self.nfqueue.unbind()
         os.system("iptables -D OUTPUT -j NFQUEUE --queue-num 1")
-        self.nfqueue.unbind()
-        sys.exit(1)
+        os.system("iptables -D INPUT -i lo -j ACCEPT")
+        os.system("iptables -D OUTPUT -o lo -j ACCEPT")
+        self.packet_handler.stop_thread()
+        self.prompt_handler.stop_thread()
+        self.packet_handler.join()
+        self.prompt_handler.join()
+        self.rule_table.remove_all_rules()
+        print('All threads joined')
+        return 1
     
     def run(self):
-        time.sleep(5)
+        time.sleep(1)
         self.packet_handler.start()
         self.nfqueue.bind(1, self.save_packet_to_queue)
         try:

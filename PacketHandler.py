@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Lock
 from RuleTable import RuleTable
 from PromptHandler import PromptHandler
 from scapy.all import IP
@@ -16,18 +16,23 @@ class PacketHandler(Thread):
         self.rule_table = RuleTable.getInstance()
         self.prompt_handler = PromptHandler()
         self.prompt_handler.start()
-        #localhost_rule = Rule("127.0.0.0/8", None, ip_flag=False)
-        #self.rule_table.add_rule(localhost_rule)
-        #t = Thread(target=self.print_packet)
-        #t.start()
+        self._stop_flag = False
+        self.mutex = Lock()
 
     def get_prompt_handler(self):
         return self.prompt_handler
+
+    def stop_thread(self):
+        self._stop_flag = True
+        self.packet_queue.put(1)
     
     def run(self):
         while True:
             try:
                 packet = PacketHandler.packet_queue.get()
+                if self._stop_flag:
+                    print('packet thread stopped')
+                    break
                 if packet is None:
                     print('None packet')
                     continue

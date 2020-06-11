@@ -17,12 +17,20 @@ class PromptHandler(Thread):
         self.mutex = Lock()
         self.rule_table = RuleTable.getInstance()
         self.controller = Controller.get_instance()
+        self._stop_flag = False
 
-    
+    def stop_thread(self):
+        self._stop_flag = True
+        self.prompt_queue.put(1)
+        self.mutex.release()
+
     def run(self):
         while True:
             self.mutex.acquire()
             packet = PromptHandler.prompt_queue.get()
+            if self._stop_flag:
+                print('promt thread stopped')
+                break
             packet_payload = IP(packet.get_payload())
             try:
                 port = packet_payload.sport
@@ -34,6 +42,7 @@ class PromptHandler(Thread):
                 self.show_prompt(packet_payload)
             else:
                 self.mutex.release()
+
 
     def show_prompt(self, packet):
         try:
@@ -71,7 +80,7 @@ class PromptHandler(Thread):
         PromptHandler.prompt_queue.put(packet)
 
     def allow_action(self, all_ports):
-        print("Allowed", all_ports)
+        #print("Allowed", all_ports)
         packet = self.packet
         destination_port = None
         ip = packet.dst
@@ -80,18 +89,21 @@ class PromptHandler(Thread):
         else:
             proto = 'tcp'
         if all_ports:
-            os.system('iptables -I OUTPUT -p {} -d {} -j ACCEPT'.format(proto, ip))
+            rule_string = 'iptables -I OUTPUT -p {} -d {} -j ACCEPT'.format(proto, ip)
+            os.system(rule_string)
         else:
             destination_port = packet.dport
-            os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j ACCEPT'.format(proto, ip, destination_port))
+            rule_string = 'iptables -I OUTPUT -p {} -d {} --dport {} -j ACCEPT'.format(proto, ip, destination_port)
+            os.system(rule_string)
         new_rule = Rule(ip, destination_port)
+        new_rule.rule_string = rule_string
         self.rule_table.add_rule(new_rule)
         self.mutex.release()
         return None
 
 
     def deny_action(self, all_ports):
-        print("Denied", all_ports)
+        #print("Denied", all_ports)
         packet = self.packet
         destination_port = None
         ip = packet.dst
@@ -100,12 +112,14 @@ class PromptHandler(Thread):
         else:
             proto = 'tcp'
         if all_ports:
+            rule_string = 'iptables -I OUTPUT -p {} -d {} -j DROP'.format(proto, ip)
             os.system('iptables -I OUTPUT -p {} -d {} -j DROP'.format(proto, ip))
         else:
             destination_port = packet.dport
+            rule_string = 'iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port)
             os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port))
         new_rule = Rule(ip, destination_port, is_allowed=False)
+        new_rule.rule_string = rule_string
         self.rule_table.add_rule(new_rule)
         self.mutex.release()
         return None
-        

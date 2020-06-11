@@ -5,6 +5,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button 
 from kivy.uix.popup import Popup
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.boxlayout import BoxLayout
 import time
 
 class PromptScreen(GridLayout):
@@ -25,21 +26,28 @@ class PromptScreen(GridLayout):
         self.deny_action = deny_action
         self.checkbox_value = False
 
-        layout = GridLayout(cols = 1, padding = 10) 
+        main_layout = BoxLayout(orientation='vertical')
+        second_layout = GridLayout(cols = 2, padding = 10, row_force_default=True, row_default_height=40)
+        checkbox_layout = GridLayout(cols = 2, padding = 10, row_force_default=True, row_default_height=40)
   
         popup_label = Label(text = text) 
         allow_button = Button(text = "Allow") 
         deny_button = Button(text = "Deny")
+        checkbox_text = Label(text = "Apply for all ports in destination host")
         checkbox = CheckBox()
   
-        layout.add_widget(popup_label) 
-        layout.add_widget(allow_button)
-        layout.add_widget(deny_button)
-        layout.add_widget(checkbox)        
+        second_layout.add_widget(allow_button)
+        second_layout.add_widget(deny_button)
+        checkbox_layout.add_widget(checkbox)
+        checkbox_layout.add_widget(checkbox_text)        
+
+        main_layout.add_widget(popup_label) 
+        main_layout.add_widget(checkbox_layout)
+        main_layout.add_widget(second_layout)
 
         # Instantiate the modal popup and display 
         popup = Popup(title ='Hello', 
-                      content = layout)      
+                      content = main_layout)      
 
         self.popup = popup
         # Attach close button press with popup.dismiss action 
@@ -49,6 +57,7 @@ class PromptScreen(GridLayout):
 
         popup.open()
     
+
     def set_checkbox_active(self, checkbox, value):
         self.checkbox_value = value
 
@@ -69,4 +78,9 @@ class MyApp(App):
     
     def show_pop_up(self, text, allow_action, deny_action):
         self.prompt_screen.pop_up(text, allow_action, deny_action)
+    
+    def on_stop(self):
+        print('Closing')
+        
+    
         
