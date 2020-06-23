@@ -21,7 +21,7 @@ class RuleTable():
     def get_rule_of_packet_ip(self, ip, port):
         for rule in self.table.values():
             if rule.port is None:
-                if rule.address_in_network(ip) :
+                if rule.address_in_network(ip):
                     return rule
             if rule.address_in_network(ip) and rule.port == port:
                 return rule

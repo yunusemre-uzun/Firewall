@@ -95,8 +95,7 @@ class PromptHandler(Thread):
             destination_port = packet.dport
             rule_string = 'iptables -I OUTPUT -p {} -d {} --dport {} -j ACCEPT'.format(proto, ip, destination_port)
             os.system(rule_string)
-        new_rule = Rule(ip, destination_port)
-        new_rule.rule_string = rule_string
+        new_rule = Rule(ip, destination_port, rule_string=rule_string, protocol=proto, is_allowed=True)
         self.rule_table.add_rule(new_rule)
         self.mutex.release()
         return None
@@ -118,8 +117,7 @@ class PromptHandler(Thread):
             destination_port = packet.dport
             rule_string = 'iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port)
             os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port))
-        new_rule = Rule(ip, destination_port, is_allowed=False)
-        new_rule.rule_string = rule_string
+        new_rule = Rule(ip, destination_port, rule_string=rule_string, protocol=proto, is_allowed=False)
         self.rule_table.add_rule(new_rule)
         self.mutex.release()
         return None

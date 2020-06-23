@@ -6,20 +6,43 @@ from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from RuleTable import RuleTable
 import time
 
-class PromptScreen(GridLayout):
+class PromptScreen(ScrollView):
 
     def __init__(self, **kwargs):
         super(PromptScreen, self).__init__(**kwargs)
-        self.cols = 2
-        self.username = TextInput(multiline=False)
-        self.add_widget(Label(text='prompt'))
-        self.add_widget(self.username)
-        self.add_widget(Label(text='password'))
-        self.password = TextInput(password=True, multiline=False)
-        self.add_widget(self.password)
+        self.rule_table = RuleTable.getInstance()
+        print(self.rule_table)
+        self.size_hint = (1, None)
+        self.size = (Window.width, Window.height)
+        self.gridlayout = GridLayout(cols=6, spacing=10, size_hint_y=None)
+        self.gridlayout.bind(minimum_height=self.gridlayout.setter('height'))
+        columns = ["", "id", "ip", "port", "protocol", "allowed"]
+        for col in columns:
+            self.add_label(col)
+        for rule_id, rule in self.rule_table.table.items():
+            self.add_row(rule.get_parameters())
+            
+        self.add_widget(self.gridlayout)
+
+    def add_label(self, label_text):
+        label = Label(text=label_text, size_hint_y=None, height=40)
+        self.gridlayout.add_widget(label)
+
+    def add_row(self, label_list):
+        self.layout.add_widget(CheckBox())
+        for label in label_list:
+            self.add_label(label)
     
+    def add_rule_to_row(self):
+        all_keys = self.rule_table.table.keys()
+        max_key = max(all_keys)
+        rule = self.rule_table.table[max_key]
+        self.add_row(rule.get_parameters())
     
     def pop_up(self, text, allow_action, deny_action):
         self.allow_action = allow_action
@@ -64,10 +87,12 @@ class PromptScreen(GridLayout):
     def allow_connection(self, instance):
         self.popup.dismiss()
         self.allow_action(self.checkbox_value)
+        #self.add_rule_to_row()
     
     def deny_connection(self, instance):
         self.popup.dismiss()
         self.deny_action(self.checkbox_value)
+        #self.add_rule_to_row()
      
 
 class MyApp(App):
@@ -77,7 +102,10 @@ class MyApp(App):
         return self.prompt_screen
     
     def show_pop_up(self, text, allow_action, deny_action):
-        self.prompt_screen.pop_up(text, allow_action, deny_action)
+        try:
+            self.prompt_screen.pop_up(text, allow_action, deny_action)
+        except Exception as e:
+            print("Popup exception:", e)
     
     def on_stop(self):
         print('Closing')
