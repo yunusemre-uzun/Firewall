@@ -41,6 +41,10 @@ class PacketHandler(Thread):
                 port = packet_payload.dport
                 rule = self.rule_table.get_rule_of_packet_ip(ip,port)
                 if rule is not None:
+                    packet.accept()
+                    continue
+                elif port == 53: #Allow all DNS calls
+                    packet.accept()
                     continue
                 else:
                     PacketHandler.print_queue.put(packet_payload)

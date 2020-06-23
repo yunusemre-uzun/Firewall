@@ -24,8 +24,8 @@ class PromptScreen(ScrollView):
         columns = ["", "id", "ip", "port", "protocol", "allowed"]
         for col in columns:
             self.add_label(col)
-        for rule_id, rule in self.rule_table.table.items():
-            self.add_row(rule.get_parameters())
+        '''for rule_id, rule in self.rule_table.table.items():
+            self.add_row(rule.get_parameters())'''
             
         self.add_widget(self.gridlayout)
 
@@ -34,9 +34,9 @@ class PromptScreen(ScrollView):
         self.gridlayout.add_widget(label)
 
     def add_row(self, label_list):
-        self.layout.add_widget(CheckBox())
+        self.gridlayout.add_widget(CheckBox())
         for label in label_list:
-            self.add_label(label)
+            self.add_label(str(label))
     
     def add_rule_to_row(self):
         all_keys = self.rule_table.table.keys()
