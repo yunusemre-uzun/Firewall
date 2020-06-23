@@ -15,7 +15,6 @@ class PacketHandler(Thread):
         Thread.__init__(self)
         self.rule_table = RuleTable.getInstance()
         self.prompt_handler = PromptHandler()
-        self.prompt_handler.start()
         self._stop_flag = False
         self.mutex = Lock()
 
@@ -27,6 +26,7 @@ class PacketHandler(Thread):
         self.packet_queue.put(1)
     
     def run(self):
+        self.prompt_handler.start()
         while True:
             try:
                 packet = PacketHandler.packet_queue.get()

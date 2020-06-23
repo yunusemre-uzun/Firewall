@@ -7,6 +7,7 @@ import queue
 import sys
 import subprocess
 import os
+import time
 
 class PromptHandler(Thread):
     prompt_queue = queue.Queue() # Thread safe queue to store user prompts
@@ -25,6 +26,7 @@ class PromptHandler(Thread):
         self.mutex.release()
 
     def run(self):
+        time.sleep(1)
         while True:
             self.mutex.acquire()
             packet = PromptHandler.prompt_queue.get()

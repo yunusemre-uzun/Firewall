@@ -16,12 +16,11 @@ class PromptScreen(ScrollView):
     def __init__(self, **kwargs):
         super(PromptScreen, self).__init__(**kwargs)
         self.rule_table = RuleTable.getInstance()
-        print(self.rule_table)
         self.size_hint = (1, None)
         self.size = (Window.width, Window.height)
         self.gridlayout = GridLayout(cols=6, spacing=10, size_hint_y=None)
         self.gridlayout.bind(minimum_height=self.gridlayout.setter('height'))
-        columns = ["", "id", "ip", "port", "protocol", "allowed"]
+        columns = ["", "ID", "IP", "Port", "Protocol", "Status"]
         for col in columns:
             self.add_label(col)
         '''for rule_id, rule in self.rule_table.table.items():
@@ -48,11 +47,13 @@ class PromptScreen(ScrollView):
         self.allow_action = allow_action
         self.deny_action = deny_action
         self.checkbox_value = False
-
+        
+        
         main_layout = BoxLayout(orientation='vertical')
+        
         second_layout = GridLayout(cols = 2, padding = 10, row_force_default=True, row_default_height=40)
         checkbox_layout = GridLayout(cols = 2, padding = 10, row_force_default=True, row_default_height=40)
-  
+
         popup_label = Label(text = text) 
         allow_button = Button(text = "Allow") 
         deny_button = Button(text = "Deny")
@@ -67,12 +68,11 @@ class PromptScreen(ScrollView):
         main_layout.add_widget(popup_label) 
         main_layout.add_widget(checkbox_layout)
         main_layout.add_widget(second_layout)
-
+        
         # Instantiate the modal popup and display 
-        popup = Popup(title ='Hello', 
-                      content = main_layout)      
-
-        self.popup = popup
+        popup = Popup(title ='Connection Alert', 
+                      content = main_layout, auto_dismiss=False, size=(200, 200))      
+        self.popup_screen = popup
         # Attach close button press with popup.dismiss action 
         allow_button.bind(on_press = self.allow_connection)
         deny_button.bind(on_press = self.deny_connection)
@@ -85,14 +85,14 @@ class PromptScreen(ScrollView):
         self.checkbox_value = value
 
     def allow_connection(self, instance):
-        self.popup.dismiss()
+        self.popup_screen.dismiss()
         self.allow_action(self.checkbox_value)
-        #self.add_rule_to_row()
+        self.add_rule_to_row()
     
     def deny_connection(self, instance):
-        self.popup.dismiss()
+        self.popup_screen.dismiss()
         self.deny_action(self.checkbox_value)
-        #self.add_rule_to_row()
+        self.add_rule_to_row()
      
 
 class MyApp(App):
