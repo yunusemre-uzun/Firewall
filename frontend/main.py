@@ -9,6 +9,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from RuleTable import RuleTable
+from kivy.clock import mainthread
 import time
 
 class PromptScreen(ScrollView):
@@ -100,7 +101,8 @@ class MyApp(App):
     def build(self):
         self.prompt_screen = PromptScreen()
         return self.prompt_screen
-    
+
+    @mainthread
     def show_pop_up(self, text, allow_action, deny_action):
         try:
             self.prompt_screen.pop_up(text, allow_action, deny_action)
