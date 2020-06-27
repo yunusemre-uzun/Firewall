@@ -12,3 +12,5 @@
     Note: After you run the application all outgoing network will be blocked except DNS calls. You need to allow or deny applications one by one in order to have a custom configured network.
 
     Note: We recommend that close voice call applications or other UDP applications before starting the app, then start your voice calls in order to have good experience.
+    
+    ![GitHub Logo](/addtional/project_structure.png)
