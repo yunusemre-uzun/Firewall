@@ -30,13 +30,19 @@ class PromptHandler(Thread):
         while True:
             self.mutex.acquire()
             packet = PromptHandler.prompt_queue.get()
+            self.raw_packet = packet
             if self._stop_flag:
                 print('promt thread stopped')
                 break
             packet_payload = IP(packet.get_payload())
             try:
                 port = packet_payload.sport
+                dest_port = packet_payload.dport
             except AttributeError:
+                self.mutex.release()
+                continue
+            if dest_port == 53 or dest_port==43:
+                #packet.accept()
                 self.mutex.release()
                 continue
             rule = self.rule_table.get_rule_of_packet_ip(packet_payload.dst, port)
@@ -99,6 +105,8 @@ class PromptHandler(Thread):
             os.system(rule_string)
         new_rule = Rule(ip, destination_port, rule_string=rule_string, protocol=proto, is_allowed=True)
         self.rule_table.add_rule(new_rule)
+        self.raw_packet.accept()
+        print('Packet allowed')
         self.mutex.release()
         return None
 
@@ -121,5 +129,6 @@ class PromptHandler(Thread):
             os.system('iptables -I OUTPUT -p {} -d {} --dport {} -j DROP'.format(proto, ip, destination_port))
         new_rule = Rule(ip, destination_port, rule_string=rule_string, protocol=proto, is_allowed=False)
         self.rule_table.add_rule(new_rule)
+        self.raw_packet.drop()
         self.mutex.release()
         return None

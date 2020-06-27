@@ -43,12 +43,12 @@ class PacketHandler(Thread):
                 if rule is not None:
                     packet.accept()
                     continue
-                elif port == 53: #Allow all DNS calls
+                if port == 53 or port == 43: #Allow all DNS calls
                     packet.accept()
                     continue
                 else:
                     PacketHandler.print_queue.put(packet_payload)
-                    packet.accept()
+                    #packet.accept()
                     self.prompt_handler.add_packet_to_queue(packet)
             except KeyboardInterrupt:
                 break
